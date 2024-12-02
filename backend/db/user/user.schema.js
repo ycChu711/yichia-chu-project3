@@ -9,5 +9,5 @@ exports.UserSchema = new Schema({
         type: String,
         require: true,
     }
-}, { collection : 'usersSpr2023' });
+}, { collection: 'usersFall2024' });
 

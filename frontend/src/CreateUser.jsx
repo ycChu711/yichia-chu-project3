@@ -1,49 +1,64 @@
-import axios from 'axios';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
+import './styles/common.css';
+import './styles/CreateUser.css';
 
 export default function CreateUser() {
     const [usernameInput, setUsernameInput] = useState('');
-    const [passwordInput, setPasswordInput] = useState('')
+    const [passwordInput, setPasswordInput] = useState('');
     const [error, setError] = useState('');
-
     const navigate = useNavigate();
 
-    function setUsername(event) {
-        const username = event.target.value;
-        setUsernameInput(username);
-    }
-
-    function setPassword(event) {
-        const pswd = event.target.value;
-        setPasswordInput(pswd);
-    }
-
-    async function submit() {
+    async function handleSubmit() {
         try {
-            const response = await axios.post('/api/users/register', {username: usernameInput, password: passwordInput})
-            navigate('/')
+            // For now, store in localStorage
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.username === usernameInput)) {
+                setError('Username already exists');
+                return;
+            }
+
+            const newUser = {
+                username: usernameInput,
+                password: passwordInput,
+                joinedAt: new Date().toISOString()
+            };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            navigate('/login');
         } catch (error) {
-            console.log(error)
-            setError(error.response.data)
+            setError('Error creating account');
         }
-        // console.log(usernameInput, passwordInput);
     }
 
     return (
-        <div>
-            <h1>Register New User</h1>
-            {!!error && <h3>{error}</h3>}
-            <div>
-                <span>Username: </span><input type='text' value={usernameInput} onInput={setUsername}></input>
-            </div>
-            <div>
-                <span>Password: </span><input type='text' value={passwordInput} onInput={setPassword}></input>
+        <div className="register-container">
+            <h1 className="register-title">Register New User</h1>
+            {error && <div className="error-message">{error}</div>}
+
+            <div className="input-group">
+                <label className="input-label">Username:</label>
+                <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    className="input-field"
+                />
             </div>
 
-            <button onClick={submit}>Create Account/Login</button>
+            <div className="input-group">
+                <label className="input-label">Password:</label>
+                <input
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="input-field"
+                />
+            </div>
+
+            <button onClick={handleSubmit} className="button">
+                Create Account
+            </button>
         </div>
-    )
-
-
+    );
 }

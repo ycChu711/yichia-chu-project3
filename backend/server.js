@@ -1,16 +1,15 @@
 const express = require('express');
-const helper = require('./apis/helper');
-const pokemon = require('./apis/pokemon')
 const users = require('./apis/user')
+const posts = require('./apis/post');
 const app = express();
 const mongoose = require('mongoose')
 const cors = require('cors')
 const path = require('path')
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
-
-const mongoDBEndpoint = 'mongodb+srv://hunter:banana2@seawebdevfall2021.ykjok.mongodb.net/?retryWrites=true&w=majority';
-mongoose.connect(mongoDBEndpoint,  { useNewUrlParser: true });
+const mongoDBEndpoint = process.env.MONGODB_ENDPOINT;
+mongoose.connect(mongoDBEndpoint, { useNewUrlParser: true });
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'Error connecting to MongoDB:'));
@@ -21,9 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
-app.use('/api/pokemon/', pokemon);
 app.use('/api/users/', users)
-
+app.use('/api/posts/', posts);
 
 
 let frontend_dir = path.join(__dirname, '..', 'frontend', 'dist')
@@ -36,7 +34,7 @@ app.get('*', function (req, res) {
 
 
 
-app.listen(process.env.PORT || 8000, function() {
+app.listen(process.env.PORT || 8000, function () {
     console.log("Starting server now...")
 })
 

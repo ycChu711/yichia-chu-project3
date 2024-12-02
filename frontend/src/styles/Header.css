@@ -1,0 +1,56 @@
+.header {
+    background-color: #f8f9fa;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.home-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.auth-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.separator {
+    color: #6c757d;
+}
+
+.welcome-text {
+    color: #212529;
+}
+
+.logout-button {
+    padding: 8px 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: #c82333;
+}
+
+.header a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.header a:hover {
+    text-decoration: underline;
+}

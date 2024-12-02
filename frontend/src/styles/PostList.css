@@ -1,0 +1,38 @@
+.post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post-card {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.post-author {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.post-author:hover {
+    text-decoration: underline;
+}
+
+.post-timestamp {
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.post-content {
+    margin: 10px 0;
+}

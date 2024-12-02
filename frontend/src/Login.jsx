@@ -1,50 +1,65 @@
-import axios from 'axios';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
+import './styles/common.css';
+import './styles/Login.css';
 
 export default function Login() {
     const [usernameInput, setUsernameInput] = useState('');
     const [passwordInput, setPasswordInput] = useState('');
-
-    const [error, setErrorValue] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    function setUsername(event) {
-        const username = event.target.value;
-        setUsernameInput(username);
-    }
-
-    function setPassword(event) {
-        const pswd = event.target.value;
-        setPasswordInput(pswd);
-    }
-
-    async function submit() {
-        setErrorValue('');
+    async function handleLogin() {
+        setError('');
         try {
-            const response = await axios.post('/api/users/login', {username: usernameInput, password: passwordInput})
-            navigate('/');
-        } catch (e) {
-            setErrorValue(e.response.data)
-        }
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u =>
+                u.username === usernameInput &&
+                u.password === passwordInput
+            );
 
-        // console.log(usernameInput, passwordInput);
+            if (user) {
+                localStorage.setItem('currentUser', JSON.stringify({
+                    username: user.username,
+                    joinedAt: user.joinedAt
+                }));
+                navigate('/');
+            } else {
+                setError('Invalid username or password');
+            }
+        } catch (e) {
+            setError('Error during login');
+        }
     }
 
     return (
-        <div>
-            <h1>Login</h1>
-            {!!error && <h2>{error}</h2>}
-            <div>
-                <span>Username: </span><input type='text' value={usernameInput} onInput={setUsername}></input>
-            </div>
-            <div>
-                <span>Password: </span><input type='text' value={passwordInput} onInput={setPassword}></input>
+        <div className="login-container">
+            <h1 className="login-title">Login</h1>
+            {error && <div className="error-message">{error}</div>}
+
+            <div className="input-group">
+                <label className="input-label">Username:</label>
+                <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    className="input-field"
+                />
             </div>
 
-            <button onClick={submit}>Create Account/Login</button>
+            <div className="input-group">
+                <label className="input-label">Password:</label>
+                <input
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="input-field"
+                />
+            </div>
+
+            <button onClick={handleLogin} className="button">
+                Login
+            </button>
         </div>
-    )
-
-
+    );
 }
