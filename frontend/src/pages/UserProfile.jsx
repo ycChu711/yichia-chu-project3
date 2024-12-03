@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { users } from '../utils/api';
 import Header from '../components/Header';
 import PostList from '../components/PostList';
+import PostCreate from '../components/PostCreate';
 import { useAuth } from '../context/AuthContext';
 
 export default function UserProfile() {
@@ -10,7 +11,14 @@ export default function UserProfile() {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { user } = useAuth(); // Get current logged in user
+    const postListRef = useRef();
+    const { user } = useAuth();
+
+    const handlePostCreated = () => {
+        if (postListRef.current) {
+            postListRef.current.loadPosts();
+        }
+    };
 
     useEffect(() => {
         loadUserData();
@@ -61,14 +69,13 @@ export default function UserProfile() {
                             new Date(userData.joinedAt).toLocaleDateString()}
                     </p>
                 </div>
-                {/* Only show edit options if viewing own profile */}
                 {user === username && (
                     <div className="profile-actions">
-                        {/* Add any profile edit options here */}
                     </div>
                 )}
+                {user === username && <PostCreate onPostCreated={handlePostCreated} />}
                 <h2 className="profile-posts-title">Posts</h2>
-                <PostList username={username} />
+                <PostList ref={postListRef} username={username} />
             </div>
         </div>
     );
