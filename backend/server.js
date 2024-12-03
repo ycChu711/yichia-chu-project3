@@ -1,55 +1,71 @@
 const express = require('express');
-const users = require('./apis/user')
-const posts = require('./apis/post');
-const app = express();
-const mongoose = require('mongoose')
-const cors = require('cors')
-const path = require('path')
+const mongoose = require('mongoose');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require('path');
+const { handleError } = require('./utils/errorHandler');
 require('dotenv').config();
 
-const mongoDBEndpoint = process.env.MONGODB_ENDPOINT;
-mongoose.connect(mongoDBEndpoint, { useNewUrlParser: true });
+const app = express();
 
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Error connecting to MongoDB:'));
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_ENDPOINT, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+    .then(() => console.log('Connected to MongoDB'))
+    .catch((err) => console.error('MongoDB connection error:', err));
 
-app.use(cors());
+// Middleware
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Rate limiting
+const rateLimit = require('express-rate-limit');
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use('/api/', limiter);
 
-app.use('/api/users/', users)
-app.use('/api/posts/', posts);
+// Security headers
+const helmet = require('helmet');
+app.use(helmet());
 
+// Routes
+app.use('/api/users', require('./apis/user'));
+app.use('/api/posts', require('./apis/post'));
 
-let frontend_dir = path.join(__dirname, '..', 'frontend', 'dist')
+// Serve static frontend in production
+if (process.env.NODE_ENV === 'production') {
+    const frontend_dir = path.join(__dirname, '..', 'frontend', 'dist');
+    app.use(express.static(frontend_dir));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(frontend_dir, "index.html"));
+    });
+}
 
-app.use(express.static(frontend_dir));
-app.get('*', function (req, res) {
-    console.log("received request");
-    res.sendFile(path.join(frontend_dir, "index.html"));
+// Error handling
+app.use((err, req, res, next) => {
+    handleError(err, res);
 });
 
+// Start server
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
 
-
-app.listen(process.env.PORT || 8000, function () {
-    console.log("Starting server now...")
-})
-
-
-
-// const http = require('http');
-
-// const server = http.createServer(function (request, response) {
-
-//     response.writeHead(200, { 'Content-Type': 'text/plain' });
-//     response.end('Hello web dev!');
-
-// })
-
-// // 127.0.0.1 === localhost
-// server.listen(8000, "127.0.0.1", function() {
-//     console.log("The server has started!")
-// })
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+    console.log(err.name, err.message);
+    server.close(() => {
+        process.exit(1);
+    });
+});

@@ -3,37 +3,48 @@ import ReactDOM from 'react-dom/client'
 import {
   createBrowserRouter,
   RouterProvider,
-  Route,
+  Navigate,
 } from "react-router-dom";
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-import Login from './Login';
-import CreateUser from './CreateUser';
-import Home from './Home';
-import UserProfile from './UserProfile';
+import Login from './pages/Login';
+import CreateUser from './pages/CreateUser';
+import Home from './pages/Home';
+import UserProfile from './pages/UserProfile';
 
-const router = createBrowserRouter([
-  {
-    path: '/user/:username',
-    element: <UserProfile />
-  },
-  {
-    path: '/login',
-    element: <Login />
-  },
-  {
-    path: '/register',
-    element: <CreateUser />
-  },
-  {
-    path: '/',
-    element: <Home />
-  },
-]);
+const Root = () => {
+  const { user, loading } = useAuth();
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
+  const router = createBrowserRouter([
+    {
+      path: '/login',
+      element: !user ? <Login /> : <Navigate to="/" />,
+    },
+    {
+      path: '/register',
+      element: !user ? <CreateUser /> : <Navigate to="/" />,
+    },
+    {
+      path: '/user/:username',
+      element: <UserProfile />,
+    },
+    {
+      path: '/',
+      element: <Home />,
+    },
+  ]);
+
+  return <RouterProvider router={router} />;
+};
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <Root />
+    </AuthProvider>
   </React.StrictMode>,
 )

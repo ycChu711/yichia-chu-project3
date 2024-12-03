@@ -1,124 +1,120 @@
-const express = require('express')
+const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken')
-
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs'); // We'll need to install this
+const { validateUser } = require('../middleware/validation');
+const { authenticateUser } = require('../middleware/auth');
 const UserModel = require('../db/user/user.model');
 
-// Authentication middleware (same as in posts.js)
-const authenticateUser = async (req, res, next) => {
-    const token = req.cookies.username;
-    if (!token) {
-        return res.status(401).send('Authentication required');
-    }
+// Get user profile
+router.get('/:username', async (req, res) => {
     try {
-        const username = jwt.verify(token, "HUNTERS_PASSWORD");
-        req.username = username;
-        next();
+        const userData = await UserModel.findUserByUsername(req.params.username);
+        if (!userData) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        // Don't send password in response
+        const { password, ...userWithoutPassword } = userData.toObject();
+        res.json(userWithoutPassword);
     } catch (err) {
-        res.status(401).send('Invalid token');
+        res.status(500).json({ error: 'Error fetching user data' });
     }
-};
-
-router.get('/', function (request, response) {
-    response.send(userDB);
-})
-
-router.post('/', async function (request, response) {
-    const body = request.body;
-
-    const newUserResponse = await UserModel.createUser(body)
-
-    response.send("Created new user!");
-})
-
-router.post('/login', async function (req, res) {
-    const username = req.body.username;
-    const password = req.body.password;
-
-    try {
-        const createUserResponse = await UserModel.findUserByUsername(username)
-
-        console.log(createUserResponse)
-        console.log(createUserResponse.password)
-        console.log(password)
-        if (createUserResponse.password !== password) {
-            return res.status(403).send("Invalid password")
-        }
-
-        const token = jwt.sign(username, "HUNTERS_PASSWORD")
-
-        res.cookie("username", token);
-
-        return res.send("User created successfully")
-
-    } catch (e) {
-        res.status(401).send(null);
-    }
-})
-
-router.post('/register', async function (req, res) {
-    const username = req.body.username;
-    const password = req.body.password;
-
-
-    try {
-        if (!username || !password) {
-            return res.status(409).send("Missing username or password")
-        }
-
-        const createUserResponse = await UserModel.createUser({ username: username, password: password });
-
-        const token = jwt.sign(username, "HUNTERS_PASSWORD")
-
-        res.cookie("username", token);
-
-        return res.send("User created successfully")
-
-    } catch (e) {
-        res.status(401).send("Error: username already exists");
-    }
-})
-
-router.get('/isLoggedIn', async function (req, res) {
-
-    const username = req.cookies.username;
-
-    if (!username) {
-        return res.send({ username: null })
-    }
-    let decryptedUsername;
-    try {
-        decryptedUsername = jwt.verify(username, "HUNTERS_PASSWORD")
-    } catch (e) {
-        return res.send({ username: null })
-    }
-
-    if (!decryptedUsername) {
-
-        return res.send({ username: null })
-    } else {
-        return res.send({ username: decryptedUsername })
-    }
-
-})
-
-router.post('/logOut', async function (req, res) {
-
-    res.cookie('username', '', {
-        maxAge: 0,
-    })
-
-    res.send(true);
-
 });
 
-router.get('/:username', async function (req, res) {
-    const username = req.params.username;
+// Register new user
+router.post('/register', validateUser, async (req, res) => {
+    try {
+        const { username, password } = req.body;
 
-    const userData = await
-        UserModel.findUserByUsername(username);
+        // Check if user already exists
+        const existingUser = await UserModel.findUserByUsername(username);
+        if (existingUser) {
+            return res.status(409).json({ error: 'Username already exists' });
+        }
 
-    return res.send(userData);
-})
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-module.exports = router
+        // Create user
+        const user = await UserModel.createUser({
+            username,
+            password: hashedPassword
+        });
+
+        // Generate token
+        const token = jwt.sign(username, process.env.JWT_SECRET || "HUNTERS_PASSWORD");
+
+        // Set cookie and send response
+        res.cookie('username', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.status(201).json({ message: 'User created successfully' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error creating user' });
+    }
+});
+
+// Login
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Find user
+        const user = await UserModel.findUserByUsername(username);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Check password
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Generate token
+        const token = jwt.sign(username, process.env.JWT_SECRET || "HUNTERS_PASSWORD");
+
+        // Set cookie and send response
+        res.cookie('username', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({ message: 'Login successful' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error during login' });
+    }
+});
+
+// Check auth status
+router.get('/auth/status', authenticateUser, async (req, res) => {
+    try {
+        const user = await UserModel.findUserByUsername(req.username);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const { password, ...userWithoutPassword } = user.toObject();
+        res.json(userWithoutPassword);
+    } catch (err) {
+        res.status(500).json({ error: 'Error checking auth status' });
+    }
+});
+
+// Logout
+router.post('/logout', (req, res) => {
+    res.cookie('username', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 0
+    });
+    res.json({ message: 'Logged out successfully' });
+});
+
+module.exports = router;
