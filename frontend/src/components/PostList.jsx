@@ -1,4 +1,3 @@
-// PostList.jsx
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Link } from 'react-router-dom';
 import { posts } from '../utils/api';
@@ -12,6 +11,8 @@ const PostList = forwardRef(({ username }, ref) => {
     const [error, setError] = useState('');
     const [editingPost, setEditingPost] = useState(null);
     const [editContent, setEditContent] = useState('');
+    const [editImage, setEditImage] = useState(null);
+    const [editImagePreview, setEditImagePreview] = useState(null);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -36,15 +37,39 @@ const PostList = forwardRef(({ username }, ref) => {
             setLoading(false);
         }
     }
-
+    const handleEditImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setEditImage(file);
+            setEditImagePreview(URL.createObjectURL(file));
+        }
+    };
     async function handleSaveEdit(postId) {
         try {
-            await posts.update(postId, editContent);
+            const formData = new FormData();
+            formData.append('content', editContent);
+
+            if (editImage) {
+                formData.append('image', editImage);
+            }
+
+            console.log('Sending edit request:', {
+                postId,
+                content: editContent,
+                hasImage: !!editImage,
+                formDataEntries: [...formData.entries()].map(([key, value]) => [key, value instanceof File ? 'File' : value])
+            });
+
+            const response = await posts.update(postId, formData);
+
             setEditingPost(null);
             setEditContent('');
-            loadPosts();
+            setEditImage(null);
+            setEditImagePreview(null);
+            await loadPosts();
         } catch (err) {
-            setError('Error updating post');
+            console.error('Edit failed:', err.response?.data || err);
+            setError(err.response?.data?.error || 'Error updating post');
         }
     }
 
@@ -96,6 +121,8 @@ const PostList = forwardRef(({ username }, ref) => {
                                             onClick={() => {
                                                 setEditingPost(post._id);
                                                 setEditContent(post.content);
+                                                setEditImage(null);
+                                                setEditImagePreview(null);
                                             }}
                                             className="button edit"
                                         >
@@ -113,13 +140,54 @@ const PostList = forwardRef(({ username }, ref) => {
                         )}
                     </div>
                     {editingPost === post._id ? (
-                        <textarea
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            className="edit-textarea"
-                        />
+                        <div className="edit-form">
+                            <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="edit-textarea"
+                            />
+                            <div className="edit-image-upload">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleEditImageChange}
+                                    className="image-input"
+                                />
+                                {editImagePreview ? (
+                                    <div className="image-preview">
+                                        <img src={editImagePreview} alt="Edit preview" />
+                                        <button
+                                            onClick={() => {
+                                                setEditImage(null);
+                                                setEditImagePreview(null);
+                                            }}
+                                            className="remove-image"
+                                        >
+                                            Remove Image
+                                        </button>
+                                    </div>
+                                ) : post.imageUrl && (
+                                    <div className="current-image">
+                                        <img
+                                            src={`http://localhost:8000${post.imageUrl}`}
+                                            alt="Current"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     ) : (
-                        <p className="post-content">{post.content}</p>
+                        <>
+                            <p className="post-content">{post.content}</p>
+                            {post.imageUrl && (
+                                <div className="post-image">
+                                    <img
+                                        src={`http://localhost:8000${post.imageUrl}`}
+                                        alt="Post content"
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             ))}

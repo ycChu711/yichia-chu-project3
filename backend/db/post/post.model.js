@@ -23,17 +23,14 @@ function getPostsByUser(username) {
 }
 
 // Update a post
-function updatePost(postId, content) {
+function updatePost(postId, updateData) {
+    console.log('Updating post in model:', { postId, updateData });
     return PostModel.findByIdAndUpdate(
         postId,
-        {
-            content: content,
-            updatedAt: Date.now()
-        },
+        updateData,
         { new: true }
     ).exec();
 }
-
 // Delete a post
 function deletePost(postId) {
     return PostModel.findByIdAndDelete(postId).exec();

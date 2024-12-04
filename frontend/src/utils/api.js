@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// Create axios instance with default config
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api',  // your backend URL
+    baseURL: 'http://localhost:8000/api',
     withCredentials: true,  // important for cookies/session
     headers: {
         'Content-Type': 'application/json'
@@ -48,9 +47,31 @@ export const posts = {
         const response = await api.post('/posts', { content });
         return response.data;
     },
+    create: async (formData) => {
+        console.log('Sending data:', {
+            content: formData.get('content'),
+            image: formData.get('image')
+        });
+        const response = await api.post('/posts', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    },
 
-    update: async (postId, content) => {
-        const response = await api.put(`/posts/${postId}`, { content });
+    update: async (postId, formData) => {
+        console.log('About to send request with:', {
+            postId,
+            formData: Object.fromEntries(formData.entries()),
+            url: `/posts/${postId}`
+        });
+
+        const response = await api.put(`/posts/${postId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return response.data;
     },
 
