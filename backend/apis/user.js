@@ -106,6 +106,26 @@ router.get('/auth/status', authenticateUser, async (req, res) => {
     }
 });
 
+// Search users
+router.get('/search/:query', async (req, res) => {
+    try {
+        const searchQuery = req.params.query;
+        console.log('Search query received:', searchQuery);
+
+        if (!searchQuery) {
+            return res.status(400).json({ error: 'Search query is required' });
+        }
+
+        const users = await UserModel.searchUsers(searchQuery);
+        console.log('Found users:', users.length);
+
+        res.json(users);
+    } catch (err) {
+        console.error('Search error:', err);
+        res.status(500).json({ error: 'Error searching users' });
+    }
+});
+
 // Logout
 router.post('/logout', (req, res) => {
     res.cookie('username', '', {
