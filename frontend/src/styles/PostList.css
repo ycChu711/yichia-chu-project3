@@ -56,3 +56,26 @@
     height: auto;
     border-radius: 8px;
 }
+
+.current-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.image-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.edit-form .edit-image-upload {
+    margin-top: 10px;
+}
+
+.edit-form .current-image,
+.edit-form .image-preview {
+    max-width: 500px;
+    /* or whatever maximum width you want */
+    margin-top: 10px;
+}
