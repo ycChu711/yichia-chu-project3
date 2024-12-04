@@ -4,36 +4,57 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/common.css';
 import '../styles/PostCreate.css';
 
-// Add onPostCreated prop here
+
 export default function PostCreate({ onPostCreated }) {
     const [content, setContent] = useState('');
+    const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { user } = useAuth();
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImage(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+
     async function handleSubmit() {
-        if (!content.trim()) {
-            setError('Post content cannot be empty');
+        if (!content.trim() && !image) {
+            setError('Post must have either text or an image');
             return;
         }
 
         try {
             setLoading(true);
             setError('');
-            await posts.create(content);
-            setContent(''); // Clear the input after successful post
-            // Replace window.location.reload() with the callback
+
+            const formData = new FormData();
+            formData.append('content', content.trim() || '');
+            if (image) {
+                formData.append('image', image);
+            }
+
+            console.log('Submitting with content:', content);
+            await posts.create(formData);
+            setContent('');
+            setImage(null);
+            setImagePreview(null);
+
             if (onPostCreated) {
-                onPostCreated(); // This will trigger parent component to refresh posts
+                onPostCreated();
             }
         } catch (error) {
+            console.error('Post creation error:', error);
             setError(error.response?.data?.error || 'Error creating post');
         } finally {
             setLoading(false);
         }
     }
 
-    // Rest of the component stays the same
     if (!user) return null;
 
     return (
@@ -48,6 +69,29 @@ export default function PostCreate({ onPostCreated }) {
                     className="post-textarea"
                     disabled={loading}
                 />
+                <div className="image-upload">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        disabled={loading}
+                        className="image-input"
+                    />
+                    {imagePreview && (
+                        <div className="image-preview">
+                            <img src={imagePreview} alt="Preview" />
+                            <button
+                                onClick={() => {
+                                    setImage(null);
+                                    setImagePreview(null);
+                                }}
+                                className="remove-image"
+                            >
+                                Remove Image
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
             <button
                 onClick={handleSubmit}

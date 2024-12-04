@@ -1,14 +1,24 @@
 const validatePost = (req, res, next) => {
-    const { content } = req.body;
-    if (!content || content.trim().length === 0) {
-        return res.status(400).json({ error: 'Post content is required' });
+    // Skip validation for update requests
+    if (req.method === 'PUT') {
+        return next();
     }
-    if (content.length > 280) {
+
+    // For new posts, require either content or image
+    const content = req.body.content;
+    const hasImage = !!req.file;
+
+    // For new posts, require either content or image
+    if (!content && !hasImage) {
+        return res.status(400).json({ error: 'Post must have either content or image' });
+    }
+
+    if (content && content.length > 280) {
         return res.status(400).json({ error: 'Post content must be 280 characters or less' });
     }
+
     next();
 };
-
 const validateUser = (req, res, next) => {
     const { username, password } = req.body;
     if (!username || !password) {

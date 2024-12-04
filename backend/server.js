@@ -25,6 +25,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use('/uploads', express.static('uploads'));
+
 // Rate limiting
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({

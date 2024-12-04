@@ -3,8 +3,13 @@ const Schema = require('mongoose').Schema;
 exports.PostSchema = new Schema({
     content: {
         type: String,
-        required: true,
-        maxLength: 280
+        required: false,  // Change this to false
+        maxLength: 280,
+        default: ''
+    },
+    imageUrl: {
+        type: String,
+        required: false
     },
     author: {
         type: String,
