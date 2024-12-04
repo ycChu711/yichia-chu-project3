@@ -86,7 +86,16 @@ export const users = {
     getProfile: async (username) => {
         const response = await api.get(`/users/${username}`);
         return response.data;
-    }
+    },
+    search: async (query) => {
+        try {
+            const response = await api.get(`/users/search/${query}`);
+            return response.data;
+        } catch (err) {
+            console.error('API Search error:', err.response || err);
+            throw err; // Re-throw to handle in component
+        }
+    },
 };
 
 export default api;

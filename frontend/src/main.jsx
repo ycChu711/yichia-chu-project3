@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import CreateUser from './pages/CreateUser';
 import Home from './pages/Home';
 import UserProfile from './pages/UserProfile';
+import SearchUser from './pages/SearchUser';
 
 const Root = () => {
   const { user, loading } = useAuth();
@@ -36,6 +37,10 @@ const Root = () => {
       path: '/',
       element: <Home />,
     },
+    {
+      path: '/search/:query',
+      element: <SearchUser />,
+    }
   ]);
 
   return <RouterProvider router={router} />;
