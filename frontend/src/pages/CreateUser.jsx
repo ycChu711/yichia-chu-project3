@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
+import '../styles/CreateUser.css';
 
 export default function CreateUser() {
     const [usernameInput, setUsernameInput] = useState('');
@@ -28,7 +29,8 @@ export default function CreateUser() {
     }
 
     return (
-        <div>
+
+        <div className="page-container">
             <Header />
 
             <div className="register-container">
@@ -73,5 +75,6 @@ export default function CreateUser() {
                 </form>
             </div>
         </div>
+
     );
 }

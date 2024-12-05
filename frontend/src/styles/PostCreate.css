@@ -5,6 +5,7 @@
     border-radius: 8px;
     width: 100%;
     box-sizing: border-box;
+    font-family: 'Roboto', 'Helvetica Neue', sans-serif;
 }
 
 .post-create-title {

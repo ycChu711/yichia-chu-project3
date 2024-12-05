@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import PostList from '../components/PostList';
 import PostCreate from '../components/PostCreate';
 import { useAuth } from '../context/AuthContext';
+import '../styles/UserProfile.css';
 
 export default function UserProfile() {
     const { username } = useParams();
@@ -59,7 +60,7 @@ export default function UserProfile() {
     );
 
     return (
-        <div>
+        <div className='user-profile'>
             <Header />
             <div className="container">
                 <div className="profile-header">
