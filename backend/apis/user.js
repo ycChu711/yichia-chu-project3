@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs'); // We'll need to install this
+const bcrypt = require('bcryptjs');
 const { validateUser } = require('../middleware/validation');
 const { authenticateUser } = require('../middleware/auth');
 const UserModel = require('../db/user/user.model');
@@ -13,7 +13,7 @@ router.get('/:username', async (req, res) => {
         if (!userData) {
             return res.status(404).json({ error: 'User not found' });
         }
-        // Don't send password in response
+
         const { password, ...userWithoutPassword } = userData.toObject();
         res.json(userWithoutPassword);
     } catch (err) {

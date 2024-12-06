@@ -8,7 +8,6 @@ function Home() {
     const postListRef = useRef();
     const { user } = useAuth();
 
-    // This function will be passed to PostCreate
     const handlePostCreated = () => {
         if (postListRef.current) {
             postListRef.current.loadPosts();

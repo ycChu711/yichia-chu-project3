@@ -87,3 +87,26 @@
 .search-button:hover {
     background-color: #0056b3;
 }
+
+@media only screen and (max-width: 767px) {
+    .header {
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-form {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .search-input {
+        width: 100%;
+        flex: 1;
+    }
+
+    .auth-section {
+        width: 100%;
+        justify-content: center;
+    }
+}

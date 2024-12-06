@@ -43,3 +43,18 @@
     height: auto;
     border-radius: 8px;
 }
+
+@media only screen and (max-width: 767px) {
+    .post-create {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .post-textarea {
+        min-height: 80px;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+    }
+}
