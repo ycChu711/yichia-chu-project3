@@ -15,7 +15,7 @@ function getAllPosts() {
         .exec();
 }
 
-// Get posts by a specific user
+// Get posts by a user
 function getPostsByUser(username) {
     return PostModel.find({ author: username })
         .sort({ createdAt: -1 })
@@ -36,7 +36,7 @@ function deletePost(postId) {
     return PostModel.findByIdAndDelete(postId).exec();
 }
 
-// Get a single post by ID
+// Get post by ID
 function getPostById(postId) {
     return PostModel.findById(postId).exec();
 }

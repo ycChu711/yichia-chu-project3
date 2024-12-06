@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import '../styles/Login.css';
 
 export default function Login() {
     const [usernameInput, setUsernameInput] = useState('');
@@ -27,7 +28,8 @@ export default function Login() {
     }
 
     return (
-        <div>
+        <div className="page-container">
+
             <Header />
             <div className="login-container">
                 <h1 className="login-title">Login</h1>

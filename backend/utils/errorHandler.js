@@ -17,7 +17,6 @@ const handleError = (err, res) => {
         });
     }
 
-    // Programming or unknown errors
     console.error('ERROR 💥', err);
     return res.status(500).json({
         status: 'error',

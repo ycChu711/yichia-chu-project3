@@ -5,6 +5,7 @@
     border-radius: 8px;
     width: 100%;
     box-sizing: border-box;
+    font-family: 'Roboto', 'Helvetica Neue', sans-serif;
 }
 
 .post-create-title {
@@ -41,4 +42,19 @@
     max-width: 100%;
     height: auto;
     border-radius: 8px;
+}
+
+@media only screen and (max-width: 767px) {
+    .post-create {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .post-textarea {
+        min-height: 80px;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+    }
 }

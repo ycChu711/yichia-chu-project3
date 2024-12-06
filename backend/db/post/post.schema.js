@@ -3,7 +3,7 @@ const Schema = require('mongoose').Schema;
 exports.PostSchema = new Schema({
     content: {
         type: String,
-        required: false,  // Change this to false
+        required: false,
         maxLength: 280,
         default: ''
     },
