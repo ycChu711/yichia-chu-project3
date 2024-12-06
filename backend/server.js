@@ -37,7 +37,17 @@ app.use('/api/', limiter);
 
 // Security headers
 const helmet = require('helmet');
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            connectSrc: ["'self'", "https://yichia-chu-project3.onrender.com", "http://localhost:5173", "http://localhost:8000"],
+            imgSrc: ["'self'", "data:", "blob:"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+        }
+    }
+}));
 
 // Routes
 app.use('/api/users', require('./apis/user'));
