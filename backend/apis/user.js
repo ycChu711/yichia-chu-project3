@@ -42,7 +42,7 @@ router.post('/register', validateUser, async (req, res) => {
         });
 
         // Generate token
-        const token = jwt.sign(username, process.env.JWT_SECRET || "HUNTERS_PASSWORD");
+        const token = jwt.sign(username, process.env.JWT_SECRET);
 
         // Set cookie and send response
         res.cookie('username', token, {
