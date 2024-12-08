@@ -16,6 +16,10 @@ export default function PostCreate({ onPostCreated }) {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                setError('File size too large. Maximum is 10MB');
+                return;
+            }
             setImage(file);
             setImagePreview(URL.createObjectURL(file));
         }

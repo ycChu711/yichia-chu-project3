@@ -169,7 +169,7 @@ const PostList = forwardRef(({ username }, ref) => {
                                 ) : post.imageUrl && (
                                     <div className="current-image">
                                         <img
-                                            src={`http://localhost:8000${post.imageUrl}`}
+                                            src={post.imageUrl}
                                             alt="Current"
                                         />
                                     </div>
@@ -182,7 +182,7 @@ const PostList = forwardRef(({ username }, ref) => {
                             {post.imageUrl && (
                                 <div className="post-image">
                                     <img
-                                        src={`http://localhost:8000${post.imageUrl}`}
+                                        src={post.imageUrl}
                                         alt="Post content"
                                     />
                                 </div>
