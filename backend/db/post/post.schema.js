@@ -11,6 +11,10 @@ exports.PostSchema = new Schema({
         type: String,
         required: false
     },
+    imagePublicId: {
+        type: String,
+        required: false
+    },
     author: {
         type: String,
         required: true,

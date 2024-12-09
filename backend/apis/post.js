@@ -4,14 +4,7 @@ const multer = require('multer');
 const { authenticateUser } = require('../middleware/auth');
 const { validatePost } = require('../middleware/validation');
 const PostModel = require('../db/post/post.model');
-
-const storage = multer.diskStorage({
-    destination: 'uploads/',
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
-const upload = multer({ storage: storage });
+const { upload, cloudinary } = require('../config/cloudinary');
 
 // Get all posts
 router.get('/', async (req, res) => {
@@ -37,7 +30,12 @@ router.get('/user/:username', async (req, res) => {
 router.post('/', authenticateUser, upload.single('image'), async (req, res) => {
     console.log('Request body:', req.body);
     console.log('File:', req.file);
-    console.log('Content received:', req.body.content);
+    console.log('Cloudinary config:', {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+        hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+        hasSecret: !!process.env.CLOUDINARY_SECRET
+    });
+
     try {
         const postData = {
             content: req.body.content || '',
@@ -45,7 +43,10 @@ router.post('/', authenticateUser, upload.single('image'), async (req, res) => {
         };
 
         if (req.file) {
-            postData.imageUrl = `/uploads/${req.file.filename}`;
+            console.log('Uploading file to Cloudinary...');
+            console.log('File details:', req.file);
+            postData.imageUrl = req.file.path;
+            postData.imagePublicId = req.file.filename;
         }
 
         console.log('Creating post with data:', postData);
@@ -53,20 +54,14 @@ router.post('/', authenticateUser, upload.single('image'), async (req, res) => {
         console.log('Created post:', newPost);
         res.json(newPost);
     } catch (err) {
-        console.error('Error creating post:', err);
+        console.error('Error details:', err);
+        console.error('Stack trace:', err.stack);
         res.status(400).json({ error: err.message || 'Error creating post' });
     }
 });
 
 // Update post
 router.put('/:postId', authenticateUser, upload.single('image'), async (req, res) => {
-    console.log('Received PUT request:', {
-        body: req.body,
-        files: req.file,
-        params: req.params,
-        headers: req.headers
-    });
-
     try {
         const post = await PostModel.getPostById(req.params.postId);
         if (!post) {
@@ -77,21 +72,18 @@ router.put('/:postId', authenticateUser, upload.single('image'), async (req, res
             return res.status(403).json({ error: 'Not authorized to edit this post' });
         }
 
-
         const updateData = {
             content: req.body.content || post.content,
-            imageUrl: post.imageUrl,
             updatedAt: Date.now()
         };
 
-        // Update image if new one is provided
         if (req.file) {
-            updateData.imageUrl = `/uploads/${req.file.filename}`;
-        }
-
-        // Make sure we're not stripping both content and image
-        if (!updateData.content && !updateData.imageUrl) {
-            return res.status(400).json({ error: 'Post must have either content or image' });
+            // Delete old image from Cloudinary if it exists
+            if (post.imagePublicId) {
+                await cloudinary.uploader.destroy(post.imagePublicId);
+            }
+            updateData.imageUrl = req.file.path;  // Cloudinary URL
+            updateData.imagePublicId = req.file.filename;
         }
 
         const updatedPost = await PostModel.updatePost(
@@ -99,7 +91,6 @@ router.put('/:postId', authenticateUser, upload.single('image'), async (req, res
             updateData
         );
 
-        console.log('Post updated successfully:', updatedPost);
         res.json(updatedPost);
     } catch (err) {
         console.error('Update error:', err);

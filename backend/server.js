@@ -18,14 +18,14 @@ mongoose.connect(process.env.MONGODB_ENDPOINT, {
 
 // Middleware
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.NODE_ENV === 'production'
+        ? 'https://yichia-chu-project3.onrender.com'
+        : 'http://localhost:5173',  // This matches your local frontend URL
     credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-app.use('/uploads', express.static('uploads'));
 
 // Rate limiting
 const rateLimit = require('express-rate-limit');
@@ -42,7 +42,7 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             connectSrc: ["'self'", "https://yichia-chu-project3.onrender.com", "http://localhost:5173", "http://localhost:8000"],
-            imgSrc: ["'self'", "data:", "blob:"],
+            imgSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
         }
@@ -69,7 +69,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
@@ -77,7 +77,11 @@ app.listen(PORT, () => {
 process.on('unhandledRejection', (err) => {
     console.log('UNHANDLED REJECTION! 💥 Shutting down...');
     console.log(err.name, err.message);
-    server.close(() => {
+    if (server) {
+        server.close(() => {
+            process.exit(1);
+        });
+    } else {
         process.exit(1);
-    });
+    }
 });
