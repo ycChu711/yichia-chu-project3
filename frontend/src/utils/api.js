@@ -93,7 +93,7 @@ export const users = {
             return response.data;
         } catch (err) {
             console.error('API Search error:', err.response || err);
-            throw err; // Re-throw to handle in component
+            throw err;
         }
     },
 };

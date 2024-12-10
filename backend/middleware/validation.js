@@ -8,7 +8,6 @@ const validatePost = (req, res, next) => {
     const content = req.body.content;
     const hasImage = !!req.file;
 
-    // For new posts, require either content or image
     if (!content && !hasImage) {
         return res.status(400).json({ error: 'Post must have either content or image' });
     }

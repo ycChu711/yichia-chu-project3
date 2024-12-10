@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGODB_ENDPOINT, {
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
         ? 'https://yichia-chu-project3.onrender.com'
-        : 'http://localhost:5173',  // This matches your local frontend URL
+        : 'http://localhost:5173',
     credentials: true
 }));
 app.use(express.json());
@@ -28,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Rate limiting
+// Citation: https://www.npmjs.com/package/express-rate-limit
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -36,6 +37,7 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Security headers
+// Citation: https://www.npmjs.com/package/helmet
 const helmet = require('helmet');
 app.use(helmet({
     contentSecurityPolicy: {
